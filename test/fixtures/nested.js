@@ -1,0 +1,1 @@
+console.log(CONFIG.first.name + CONFIG.second.third.age);

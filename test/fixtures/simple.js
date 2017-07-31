@@ -1,0 +1,1 @@
+console.log(CONFIG.name + CONFIG.age + CONFIG.married);
