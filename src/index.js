@@ -28,7 +28,7 @@ export default function replaceConfig(config = {}, options) {
 
 		transform(code) {
 			if (!configName) {
-				return {code: null};
+				return null;
 			}
 
 			const magicString = new MagicString(code);
