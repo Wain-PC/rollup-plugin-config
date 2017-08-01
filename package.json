@@ -9,8 +9,7 @@
     "pretest": "npm run build",
     "coverage": "npm test -- --coverage",
     "build": "rollup -c -f cjs -o dist/rollup-plugin-config.cjs.js && rollup -c -f es -o dist/rollup-plugin-config.es.js",
-    "prebuild": "rm -rf dist/*",
-    "prepublish": "npm test"
+    "prebuild": "rm -rf dist/*"
   },
   "keywords": [
     "rollup",
