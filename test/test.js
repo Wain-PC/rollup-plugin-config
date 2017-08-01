@@ -20,7 +20,7 @@ const testFunc = function (entry, configValue, expectedValue) {
 	}
 };
 
-describe('rollup-plugin-replace', function () {
+describe('rollup-plugin-config', function () {
 	it('replaces variables of different types', testFunc('simple', {
 		CONFIG: {
 			name: 'Joe',
