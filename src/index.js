@@ -38,6 +38,12 @@ export default function replaceConfig(config = {}, options) {
 
 				start = match.index;
 				end = start + match[0].length;
+
+				//We'd have to use lookahead (it doesn't exist in JS) or mess with negative lookbehind to achieve the same result.
+				if (start && code[start - 1] === '.') {
+					continue;
+				}
+
 				const replacement = replacer(match[1]);
 
 				magicString.overwrite(start, end, replacement);

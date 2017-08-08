@@ -29,6 +29,12 @@ describe('rollup-plugin-config', function () {
 		}
 	}, 'console.log("Joe" + 24 + false);'));
 
+	it('doesn`t replace properties with the same name', testFunc('nested_properties', {
+		CONFIG: {
+			name: 'Joe'
+		}
+	}, 'console.log(window.CONFIG.name + "Joe");'));
+
 	it('returns null for variables not in config', testFunc('simple', {
 		CONFIG: {
 			name: 'Joe'

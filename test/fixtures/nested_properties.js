@@ -1,0 +1,1 @@
+console.log(window.CONFIG.name + CONFIG.name);
