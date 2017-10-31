@@ -21,13 +21,22 @@ const testFunc = function (entry, configValue, expectedValue) {
 };
 
 describe('rollup-plugin-config', function () {
-	it('replaces variables of different types', testFunc('simple', {
+	it('replaces variables of different types (part 1)', testFunc('simple', {
 		CONFIG: {
 			name: 'Joe',
 			age: 24,
 			married: false
 		}
 	}, 'console.log("Joe" + 24 + false);'));
+
+
+	it('replaces variables of different types (part 2)', testFunc('simple', {
+		CONFIG: {
+			name: '',
+			age: 0,
+			married: null
+		}
+	}, 'console.log("" + 0 + null);'));
 
 	it('doesn`t replace properties with the same name', testFunc('nested_properties', {
 		CONFIG: {

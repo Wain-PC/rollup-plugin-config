@@ -4,7 +4,7 @@ export default function replaceConfig(config = {}, options) {
 	const configName = Object.keys(config)[0];
 	const jsonifyConfig = configPart => Object.keys(configPart).reduce(
 		(obj, key) => {
-			typeof configPart[key] === 'object' ? obj[key] = jsonifyConfig(configPart[key]) : obj[key] = JSON.stringify(configPart[key]);
+			(configPart[key] && typeof configPart[key] === 'object') ? obj[key] = jsonifyConfig(configPart[key]) : obj[key] = JSON.stringify(configPart[key]);
 			return obj;
 		}, {});
 
