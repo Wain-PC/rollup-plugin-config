@@ -49,7 +49,7 @@ export default function replaceConfig(config = {}, options) {
 				magicString.overwrite(start, end, replacement);
 			}
 
-			return hasReplacements ? {code: magicString.toString()} : null;
+			return hasReplacements ? {code: magicString.toString(), map: magicString.generateMap({hires: true})} : null;
 		}
 	};
 
