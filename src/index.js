@@ -1,56 +1,66 @@
-import MagicString from 'magic-string';
+import babel from 'babel-core';
 
-export default function replaceConfig(config = {}, options) {
-	const configName = Object.keys(config)[0];
-	const jsonifyConfig = configPart => Object.keys(configPart).reduce(
-		(obj, key) => {
-			(configPart[key] && typeof configPart[key] === 'object') ? obj[key] = jsonifyConfig(configPart[key]) : obj[key] = JSON.stringify(configPart[key]);
-			return obj;
-		}, {});
-
-	const replacer = (propertyName) => {
-		let configValue = textConfig[configName], configPath = propertyName.split('.').reverse();
-		do {
-			configValue = configValue[configPath.pop()];
-		} while (configValue !== undefined && configPath.length); // eslint-disable-line
-		//Replace only when the config actually has the value required
-		if (configValue !== undefined && configValue !== null) { // eslint-disable-line
-			return configValue;
-		}
-		return 'null';
-	};
-
-	const textConfig = jsonifyConfig(config);
-	const pattern = new RegExp(configName + '\\.([\\w\\.]+)', 'g');
+export default function replaceConfig(config = {}) {
+	const keys = Object.keys(config),
+		replacer = (configObj, propertiesPathArray, rootKey) => {
+			let configValue = configObj[rootKey];
+			do {
+				const key = propertiesPathArray.pop();
+				configValue = configValue[key];
+			} while (configValue !== undefined && propertiesPathArray.length); // eslint-disable-line
+			//Replace only when the config actually has the value required
+			if (configValue !== undefined && configValue !== null) { // eslint-disable-line
+				return configValue;
+			}
+			return null;
+		},
+		plugin = function ({ types: t }) {
+			let pathArr, level = 0, isReplaceable;
+			return {
+				visitor: {
+					MemberExpression: {
+						enter(path) {
+							//Reset the `replaceable` flag if we're beginning to explore the MemberExpression
+							if (!level) {
+								isReplaceable = false;
+								pathArr = [];
+							}
+							level += 1;
+							pathArr.push(path.node.property.name);
+							// If the node has its object's name (final node), we're ready to make an assumption
+							// about its replaceability
+							if (~keys.indexOf(path.node.object.name)) {
+								isReplaceable = path.node.object.name;
+							}
+						},
+						exit(path) {
+							level -= 1;
+							//Full path is now constructed, let's find a corresponding config value
+							if (!level && isReplaceable) {
+								const value = replacer(config, pathArr, isReplaceable), type = typeof value;
+								if (type === 'string') {
+									path.replaceWith(t.stringLiteral(value));
+								} else if (type === 'number') {
+									path.replaceWith(t.numericLiteral(value));
+								} else if (type === 'boolean') {
+									path.replaceWith(t.booleanLiteral(value));
+								} else if (type === 'object') {
+									if (!value) {
+										path.replaceWith(t.nullLiteral());
+									}
+								}
+							}
+						}
+					}
+				}
+			};
+		};
 
 	return {
 		name: 'config',
-
-		transform(code) {
-			if (!configName) {
-				return null;
-			}
-
-			const magicString = new MagicString(code);
-			let match, hasReplacements = false, start, end;
-			while (match = pattern.exec(code)) {
-				hasReplacements = true;
-
-				start = match.index;
-				end = start + match[0].length;
-
-				//We'd have to use lookahead (it doesn't exist in JS) or mess with negative lookbehind to achieve the same result.
-				if (start && code[start - 1] === '.') {
-					continue;
-				}
-
-				const replacement = replacer(match[1]);
-
-				magicString.overwrite(start, end, replacement);
-			}
-
-			return hasReplacements ? {code: magicString.toString(), map: magicString.generateMap({hires: true})} : null;
+		transform(bundleCode) {
+			const {code, ast, map} = babel.transform(bundleCode, { plugins: [plugin] });
+			return {code, map};
 		}
 	};
-
 }
