@@ -6,15 +6,16 @@ process.chdir(__dirname);
 
 const testFunc = function (entry, configValue, expectedValue) {
 	return function () {
-		expect.assertions(1);
+		expect.assertions(2);
 		return rollup.rollup({
 			entry: `./fixtures/${entry}.js`,
 			plugins: [
 				config(configValue)
 			]
 		}).then(function (bundle) {
-			return bundle.generate({format: 'es'}).then(function (res) {
-				expect(res.code).toContain(expectedValue)
+			return bundle.generate({format: 'es', sourceMap: true}).then(function (res) {
+				expect(res.code).toContain(expectedValue);
+				expect(res.map.mappings.length).toBeGreaterThan(0);
 			});
 		});
 	}
