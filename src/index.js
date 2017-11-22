@@ -59,7 +59,7 @@ export default function replaceConfig(config = {}) {
 	return {
 		name: 'config',
 		transform(bundleCode) {
-			const {code, ast, map} = babel.transform(bundleCode, { plugins: [plugin] });
+			const {code, ast, map} = babel.transform(bundleCode, { plugins: [plugin], sourceMaps: true });
 			return {code, map};
 		}
 	};
