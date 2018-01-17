@@ -1,4 +1,5 @@
 import babel from 'babel-core';
+import * as babylon from 'babylon';
 
 export default function replaceConfig(config = {}) {
 	const keys = Object.keys(config),
@@ -14,7 +15,7 @@ export default function replaceConfig(config = {}) {
 			}
 			return null;
 		},
-		plugin = function ({ types: t }) {
+		plugin = function () {
 			let pathArr, level = 0, isReplaceable;
 			return {
 				visitor: {
@@ -37,18 +38,9 @@ export default function replaceConfig(config = {}) {
 							level -= 1;
 							//Full path is now constructed, let's find a corresponding config value
 							if (!level && isReplaceable) {
-								const value = replacer(config, pathArr, isReplaceable), type = typeof value;
-								if (type === 'string') {
-									path.replaceWith(t.stringLiteral(value));
-								} else if (type === 'number') {
-									path.replaceWith(t.numericLiteral(value));
-								} else if (type === 'boolean') {
-									path.replaceWith(t.booleanLiteral(value));
-								} else if (type === 'object') {
-									if (!value) {
-										path.replaceWith(t.nullLiteral());
-									}
-								}
+								const value = replacer(config, pathArr, isReplaceable);
+								const ast = babylon.parse(`var code = ${JSON.stringify(value)};`);
+								path.replaceWith(ast.program.body[0].declarations[0].init);
 							}
 						}
 					}
@@ -59,7 +51,7 @@ export default function replaceConfig(config = {}) {
 	return {
 		name: 'config',
 		transform(bundleCode) {
-			const {code, ast, map} = babel.transform(bundleCode, { plugins: [plugin], sourceMaps: true });
+			const {code, map} = babel.transform(bundleCode, { plugins: [plugin], sourceMaps: true });
 			return {code, map};
 		}
 	};

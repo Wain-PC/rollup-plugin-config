@@ -65,6 +65,19 @@ describe('rollup-plugin-config', function () {
 		}
 	}, 'console.log("Joe" + 24);'));
 
+	it('replaces with an object', testFunc('object', {
+		CONFIG: {
+			subobject: {
+				name: 'Joe',
+				second: {
+					third: {
+						age: 24
+					}
+				}
+			}
+		}
+	}, 'console.log({ "name": "Joe", "second": { "third": { "age": 24 } } });'));
+
 
 	it('doesn`t change the input when config is incorrect (has no `root`)', testFunc('simple', {}, 'console.log(CONFIG.name + CONFIG.age + CONFIG.married);'));
 
